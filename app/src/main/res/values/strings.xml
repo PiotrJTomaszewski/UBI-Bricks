@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">UBI-Bricks</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="settings">Settings</string>
+    <string name="check">CHECK</string>
+    <string name="add">ADD</string>
+    <string name="set_id">Set ID</string>
+    <string name="project_name">Project Name</string>
+    <string name="new_project">New Project</string>
+    <string name="part_image">Part Image</string>
+    <string name="plus_sign">+</string>
+    <string name="minus_sign">-</string>
+    <string name="project">Project</string>
+
+</resources>
