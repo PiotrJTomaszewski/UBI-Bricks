@@ -5,14 +5,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import pl.pjt.ubi_bricks.database.Inventory
 
 class InventoriesListAdapter (
-    private var inventories: ArrayList<Inventory>?,
+    private var inventories: ArrayList<Inventory.InventoryEntity>?,
     private val onItemClickListener: ClickListener
 ): RecyclerView.Adapter<InventoriesListAdapter.ViewHolder>() {
     class InventoryDiffCallback(
-        private val oldList: ArrayList<Inventory>?,
-        private val newList: ArrayList<Inventory>
+        private val oldList: ArrayList<Inventory.InventoryEntity>?,
+        private val newList: ArrayList<Inventory.InventoryEntity>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int {
             if (oldList == null)
@@ -25,18 +26,24 @@ class InventoriesListAdapter (
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            TODO("Implement")
-
-            return false // TODO
+            if (oldList == null) {
+                return false
+            }
+            return (oldList[oldItemPosition].id == newList[newItemPosition].id
+                    && oldList[oldItemPosition].name == newList[newItemPosition].name
+                    && oldList[oldItemPosition].active == newList[newItemPosition].active
+                    && oldList[oldItemPosition].lastAccessed == newList[newItemPosition].lastAccessed)
         }
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            TODO("Implement")
-            return false // TODO
+            if (oldList == null) {
+                return false
+            }
+            return (oldList[oldItemPosition].id == newList[newItemPosition].id)
         }
     }
 
-    class ViewHolder (private val nameView: TextView): RecyclerView.ViewHolder(nameView) {
+    class ViewHolder (val nameView: TextView): RecyclerView.ViewHolder(nameView) {
 
     }
 
@@ -52,7 +59,12 @@ class InventoriesListAdapter (
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        if (inventories != null) {
+            holder.nameView.text = inventories!![position].name
+            holder.nameView.setOnClickListener {
+                inventories!![position].id?.let { it1 -> onItemClickListener.onItemClick(it1) }
+            }
+        }
     }
 
     override fun getItemCount(): Int {
@@ -61,7 +73,10 @@ class InventoriesListAdapter (
         return inventories!!.size
     }
 
-    fun setInventories(newInventories: ArrayList<Inventory>) {
-        TODO("Implement")
+    fun setInventories(newInventories: ArrayList<Inventory.InventoryEntity>) {
+        val diffCallback = InventoryDiffCallback(inventories, newInventories)
+        val result = DiffUtil.calculateDiff(diffCallback)
+        inventories = newInventories
+        result.dispatchUpdatesTo(this)
     }
 }

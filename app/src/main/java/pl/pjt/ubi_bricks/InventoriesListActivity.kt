@@ -3,6 +3,7 @@ package pl.pjt.ubi_bricks
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
@@ -18,6 +19,8 @@ import kotlinx.android.synthetic.main.activity_inventories_list.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import pl.pjt.ubi_bricks.database.Database
+import pl.pjt.ubi_bricks.database.Inventory
 
 class InventoriesListActivity : AppCompatActivity() {
 
@@ -36,8 +39,7 @@ class InventoriesListActivity : AppCompatActivity() {
     }
 
     private fun getProjects() {
-        val db = DatabaseHandler(applicationContext)
-        val inventories = db.getInventories()
+        val inventories = Inventory.getAll()
         (viewAdapter as InventoriesListAdapter).setInventories(inventories)
     }
 
@@ -64,18 +66,19 @@ class InventoriesListActivity : AppCompatActivity() {
             DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL)
         recyclerView.addItemDecoration(dividerItemDecoration)
 
+        // TODO: Disable and then enable user control
         GlobalScope.launch {
             // Check if database exists
             val dbDownloader = lifecycleScope.async {
-                if (!DatabaseHandler.getWasDBDownloaded(applicationContext)) {
+                if (!Database.getWasDBDownloaded(applicationContext)) {
                     runOnUiThread{
                         val toast = Toast.makeText(applicationContext,
                             "Downloading database. Please wait.", Toast.LENGTH_LONG)
                         toast.show()
                     }
                     Log.println(Log.DEBUG, "Network","Downloading the database")
-                    DatabaseHandler.downloadDatabase(applicationContext)
-                    DatabaseHandler.setWasDBDownloaded(applicationContext)
+                    Database.downloadDatabase(applicationContext)
+                    Database.setWasDBDownloaded(applicationContext)
                     runOnUiThread{
                         val toast = Toast.makeText(applicationContext,
                             "Database downloaded", Toast.LENGTH_LONG)
@@ -83,12 +86,11 @@ class InventoriesListActivity : AppCompatActivity() {
                     }
                 }
             }
-
+            Database.initDatabase(applicationContext)
             // Wait for the database to be downloaded
             dbDownloader.await()
             getProjects()
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -122,7 +124,7 @@ class InventoriesListActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if ((requestCode == newProjectRequestCode) && (resultCode == Activity.RESULT_OK)) {
-
+            getProjects()
         }
     }
 }
