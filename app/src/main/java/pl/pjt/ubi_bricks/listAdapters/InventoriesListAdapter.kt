@@ -1,10 +1,11 @@
-package pl.pjt.ubi_bricks
+package pl.pjt.ubi_bricks.listAdapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import pl.pjt.ubi_bricks.R
 import pl.pjt.ubi_bricks.database.Inventory
 
 class InventoriesListAdapter (
@@ -55,7 +56,9 @@ class InventoriesListAdapter (
         val invName = LayoutInflater.from(parent.context).inflate(
             R.layout.element_inventories_list, parent, false
         ) as TextView
-        return ViewHolder(invName)
+        return ViewHolder(
+            invName
+        )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -74,7 +77,11 @@ class InventoriesListAdapter (
     }
 
     fun setInventories(newInventories: ArrayList<Inventory.InventoryEntity>) {
-        val diffCallback = InventoryDiffCallback(inventories, newInventories)
+        val diffCallback =
+            InventoryDiffCallback(
+                inventories,
+                newInventories
+            )
         val result = DiffUtil.calculateDiff(diffCallback)
         inventories = newInventories
         result.dispatchUpdatesTo(this)

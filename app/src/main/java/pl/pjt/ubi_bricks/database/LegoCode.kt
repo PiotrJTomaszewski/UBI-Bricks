@@ -28,7 +28,34 @@ class LegoCode {
 
         private const val TABLE_CODES = "Codes"
 
-        suspend fun getByItemAndColorIdWithUpdateImage(itemId: Int, colorId: Int): LegoCodeEntity {
+//        suspend fun getByItemAndColorIdWithUpdateImage(itemId: Int, colorId: Int): LegoCodeEntity {
+//            val db = Database.instance!!.readableDatabase
+//            val query = "SELECT $COLUMN_ID, $COLUMN_LEGO_CODE, $COLUMN_IMAGE FROM $TABLE_CODES WHERE $COLUMN_ITEM_ID = ? AND $COLUMN_COLOR_ID = ?"
+//            val cursor = db.rawQuery(query, arrayOf(itemId.toString(), colorId.toString()))
+//            val entity = LegoCodeEntity()
+//            if (cursor.moveToFirst()) {
+//                entity.id = cursor.getInt(0)
+//                entity.legoCode = cursor.getInt(1)
+//                val blob = cursor.getBlob(2)
+//                if (blob == null) {
+//                    val image = downloadPartImage(entity.legoCode!!)
+//                    val id = entity.id!!
+//                    if (image != null) {
+//                        entity.image = image
+//                        // Save image in the background
+//                        GlobalScope.launch {
+//                            setPartImage(id, image)
+//                        }
+//                    }
+//                } else {
+//                    entity.image = BitmapFactory.decodeByteArray(blob, 0, blob.size)
+//                }
+//                cursor.close()
+//            }
+//            return entity
+//        }
+
+        fun getByItemAndColorId(itemId: Int, colorId: Int): LegoCodeEntity {
             val db = Database.instance!!.readableDatabase
             val query = "SELECT $COLUMN_ID, $COLUMN_LEGO_CODE, $COLUMN_IMAGE FROM $TABLE_CODES WHERE $COLUMN_ITEM_ID = ? AND $COLUMN_COLOR_ID = ?"
             val cursor = db.rawQuery(query, arrayOf(itemId.toString(), colorId.toString()))
@@ -36,23 +63,34 @@ class LegoCode {
             if (cursor.moveToFirst()) {
                 entity.id = cursor.getInt(0)
                 entity.legoCode = cursor.getInt(1)
+                entity.image = null
                 val blob = cursor.getBlob(2)
-                if (blob == null) {
-                    val image = downloadPartImage(entity.legoCode!!)
-                    val id = entity.id!!
-                    if (image != null) {
-                        entity.image = image
-                        // Save image in the background
-                        GlobalScope.launch {
-                            setPartImage(id, image)
-                        }
-                    }
-                } else {
+                if (blob != null) {
                     entity.image = BitmapFactory.decodeByteArray(blob, 0, blob.size)
                 }
                 cursor.close()
             }
             return entity
+        }
+
+        suspend fun downloadPartImageIfNotPresent(itemId: Int, colorId: Int) {
+            val db = Database.instance!!.readableDatabase
+            val query = "SELECT $COLUMN_ID, $COLUMN_LEGO_CODE, $COLUMN_IMAGE FROM $TABLE_CODES WHERE $COLUMN_ITEM_ID = ? AND $COLUMN_COLOR_ID = ?"
+            val cursor = db.rawQuery(query, arrayOf(itemId.toString(), colorId.toString()))
+            if (cursor.moveToFirst()) {
+                if (cursor.getBlob(2) != null) {
+                    // The image was already downloaded
+                    cursor.close()
+                    return
+                }
+                val id = cursor.getInt(0)
+                val legoCode = cursor.getInt(1)
+                val image = downloadPartImage(legoCode)
+                if (image != null) {
+                    setPartImage(id, image)
+                }
+                cursor.close()
+            }
         }
 
         private suspend fun downloadPartImage(legoCode: Int): Bitmap? {

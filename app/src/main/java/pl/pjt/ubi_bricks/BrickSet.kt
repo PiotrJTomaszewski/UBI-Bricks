@@ -35,9 +35,9 @@ class BrickSet (
 
     private var xmlDocument: Document? = null
 
-    suspend fun downloadInventory(): Boolean {
+    fun downloadInventory(): Boolean {
         var result = false
-        withContext(Dispatchers.IO) {
+//        withContext(Dispatchers.IO) {
             val connection = URL(url).openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
@@ -54,7 +54,7 @@ class BrickSet (
                 xmlDocument = dBuilder.parse(xmlInput)
                 result = true
             }
-        }
+//        }
         return result
     }
 

@@ -3,13 +3,11 @@ package pl.pjt.ubi_bricks
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pl.pjt.ubi_bricks.database.Database
 import pl.pjt.ubi_bricks.database.Inventory
+import pl.pjt.ubi_bricks.listAdapters.InventoriesListAdapter
 
 class InventoriesListActivity : AppCompatActivity() {
 
@@ -56,7 +55,10 @@ class InventoriesListActivity : AppCompatActivity() {
 
         viewManager = LinearLayoutManager(this)
 
-        viewAdapter = InventoriesListAdapter(null, ProjectListOnClickListener())
+        viewAdapter = InventoriesListAdapter(
+            null,
+            ProjectListOnClickListener()
+        )
         recyclerView = findViewById<RecyclerView>(R.id.inventoriesList).apply {
             setHasFixedSize(true)
             layoutManager = viewManager

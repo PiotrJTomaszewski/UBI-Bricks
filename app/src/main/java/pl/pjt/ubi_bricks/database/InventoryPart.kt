@@ -35,11 +35,12 @@ class InventoryPart {
 
         fun getByInventoryId(inventoryId: Int): ArrayList<InventoryPartEntity> {
             val db = Database.instance!!.readableDatabase
-            val query = "SELECT $COLUMN_ID, $COLUMN_TYPE_ID, $COLUMN_ITEM_ID, $COLUMN_QUANTITY_IN_SET, $COLUMN_QUANTITY_IN_STORE, $COLUMN_COLOR_ID, $COLUMN_EXTRA FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_INVENTORY_ID = ?"
+            val query =
+                "SELECT $COLUMN_ID, $COLUMN_TYPE_ID, $COLUMN_ITEM_ID, $COLUMN_QUANTITY_IN_SET, $COLUMN_QUANTITY_IN_STORE, $COLUMN_COLOR_ID, $COLUMN_EXTRA FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_INVENTORY_ID = ?"
             val cursor = db.rawQuery(query, arrayOf(inventoryId.toString()))
             val list = ArrayList<InventoryPartEntity>()
             if (cursor.moveToFirst()) {
-                while(!cursor.isAfterLast) {
+                while (!cursor.isAfterLast) {
                     val entity = InventoryPartEntity()
                     entity.inventoryId = inventoryId
                     entity.id = cursor.getInt(0)
@@ -70,7 +71,7 @@ class InventoryPart {
             return id
         }
 
-        fun add(entity: InventoryPartEntity){
+        fun add(entity: InventoryPartEntity) {
             val db = Database.instance!!.writableDatabase
             val values = ContentValues()
             values.put(COLUMN_ID, entity.id)
@@ -87,6 +88,55 @@ class InventoryPart {
             Log.println(Log.DEBUG, "Database", result.toString())
         }
 
+        fun incrementInStore(id: Int): Boolean {
+            var result = false
+            val db = Database.instance!!.writableDatabase
+            val query =
+                "SELECT $COLUMN_QUANTITY_IN_STORE, $COLUMN_QUANTITY_IN_SET FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_ID = ?"
+            val cursor = db.rawQuery(query, arrayOf(id.toString()))
+            if (cursor.moveToFirst()) {
+                var inStore = cursor.getInt(0)
+                val inSet = cursor.getInt(1)
+                cursor.close()
+                inStore += 1
+                if (inStore <= inSet) {
+                    val values = ContentValues()
+                    values.put(COLUMN_QUANTITY_IN_STORE, inStore)
+                    db.update(
+                        TABLE_INVENTORIES_PARTS,
+                        values,
+                        "$COLUMN_ID = ?",
+                        arrayOf(id.toString())
+                    )
+                    result = true
+                }
+            }
+            return result
+        }
+
+        fun decrementInStore(id: Int): Boolean {
+            var result = false
+            val db = Database.instance!!.writableDatabase
+            val query =
+                "SELECT $COLUMN_QUANTITY_IN_STORE FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_ID = ?"
+            val cursor = db.rawQuery(query, arrayOf(id.toString()))
+            if (cursor.moveToFirst()) {
+                var inStore = cursor.getInt(0)
+                cursor.close()
+                inStore -= 1
+                if (inStore >= 0) {
+                    val values = ContentValues()
+                    values.put(COLUMN_QUANTITY_IN_STORE, inStore)
+                    db.update(
+                        TABLE_INVENTORIES_PARTS,
+                        values,
+                        "$COLUMN_ID = ?", arrayOf(id.toString())
+                    )
+                    result = true
+                }
+            }
+            return result
+        }
     }
 
 }
