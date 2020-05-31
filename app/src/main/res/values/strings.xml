@@ -12,8 +12,8 @@
     <string name="plus_sign">+</string>
     <string name="minus_sign">-</string>
     <string name="project">Project</string>
-    <string name="set_download_ok">Set downloaded</string>
-    <string name="set_download_error">Set download failed! Check your set id</string>
+    <string name="set_download_ok">Inventory downloaded, please wait for the images</string>
+    <string name="set_download_error">Inventory download failed! Check your set id</string>
     <string name="set_download_image_ok">Downloaded all images for project</string>
 
 </resources>

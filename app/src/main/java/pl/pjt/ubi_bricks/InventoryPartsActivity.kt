@@ -74,9 +74,9 @@ class InventoryPartsActivity : AppCompatActivity() {
             if (parts[i].colorId != null) {
                 parts[i].colorEntity = Color.getById(parts[i].colorId!!)
             }
-            if (parts[i].colorId != null && parts[i].partId != null) {
+            if (parts[i].partId != null) {
                 parts[i].legoCodeEntity =
-                    LegoCode.getByItemAndColorId(parts[i].partId!!, parts[i].colorId!!)
+                    LegoCode.getByItemAndColorId(parts[i].partId!!, parts[i].colorId)
             }
         }
 

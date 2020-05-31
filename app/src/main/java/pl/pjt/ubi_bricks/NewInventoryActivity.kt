@@ -91,22 +91,26 @@ class NewInventoryActivity : AppCompatActivity() {
             val downloadedParts = brickSet.createPartsList()
             val inventoryId = Inventory.add(projectName)
             var nextPartId = InventoryPart.getFreeKey()
-            val partColorIdArray = ArrayList<Pair<Int?, Int?>>()
+            val partColorIdArray = ArrayList<Pair<Part.PartEntity?, Color.ColorEntity?>>()
             for (downloadedPart: BrickSet.DownloadedPart in downloadedParts) {
                 val dbPart = InventoryPart.InventoryPartEntity()
+                val element = Part.getByCode(downloadedPart.itemId)
+                if (element.id == null) {
+                    // Part not found in the database
+                    continue
+                }
                 dbPart.id = nextPartId
                 dbPart.inventoryId = inventoryId
                 dbPart.quantityInStore = 0
                 dbPart.quantityInSet = downloadedPart.quantityInSet
                 val color = Color.getByLegoId(downloadedPart.colorCode)
                 dbPart.colorId = color.id
-                val element = Part.getByCode(downloadedPart.itemId)
                 dbPart.partId = element.id
                 val type = ItemType.getByCode(downloadedPart.itemType)
                 dbPart.typeId = type.id
                 // TODO: Add extra field here
 
-                partColorIdArray.add(Pair(dbPart.partId, dbPart.colorId))
+                partColorIdArray.add(Pair(element, color))
                 InventoryPart.add(dbPart)
                 nextPartId++
             }
@@ -119,7 +123,7 @@ class NewInventoryActivity : AppCompatActivity() {
             }
             // After adding set data start downloading images
             // (this allows user to start using the project while images are being downloaded)
-            for (pair: Pair<Int?, Int?> in partColorIdArray) {
+            for (pair: Pair<Part.PartEntity?, Color.ColorEntity?> in partColorIdArray) {
                 if (pair.first != null && pair.second != null) {
                     LegoCode.downloadPartImageIfNotPresent(pair.first!!, pair.second!!)
                 }
