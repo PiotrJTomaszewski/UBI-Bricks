@@ -36,7 +36,7 @@ class InventoryPart {
         fun getByInventoryId(inventoryId: Int): ArrayList<InventoryPartEntity> {
             val db = Database.instance!!.readableDatabase
             val query =
-                "SELECT $COLUMN_ID, $COLUMN_TYPE_ID, $COLUMN_ITEM_ID, $COLUMN_QUANTITY_IN_SET, $COLUMN_QUANTITY_IN_STORE, $COLUMN_COLOR_ID, $COLUMN_EXTRA FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_INVENTORY_ID = ?"
+                "SELECT $COLUMN_ID, $COLUMN_TYPE_ID, $COLUMN_ITEM_ID, $COLUMN_QUANTITY_IN_SET, $COLUMN_QUANTITY_IN_STORE, $COLUMN_COLOR_ID, $COLUMN_EXTRA FROM $TABLE_INVENTORIES_PARTS WHERE $COLUMN_INVENTORY_ID = ? ORDER BY $COLUMN_QUANTITY_IN_STORE/$COLUMN_QUANTITY_IN_SET ASC"
             val cursor = db.rawQuery(query, arrayOf(inventoryId.toString()))
             val list = ArrayList<InventoryPartEntity>()
             if (cursor.moveToFirst()) {
