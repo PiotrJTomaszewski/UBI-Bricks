@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        app:key="urlPrefix"
+        app:dialogTitle="@string/settings_url_prefix"
+        android:summary="placeholder"
+        android:title="@string/settings_url_prefix" />
+    <SwitchPreferenceCompat
+        android:key="showArchived"
+        android:title="@string/settings_archive"
+        android:summary="@string/settings_show_archived"
+        />
+</PreferenceScreen>

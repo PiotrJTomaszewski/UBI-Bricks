@@ -24,6 +24,8 @@ class NewInventoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_inventory)
         setSupportActionBar(newInventoryToolbar)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar!!.setDisplayShowHomeEnabled(true)
 
     }
 
@@ -76,8 +78,10 @@ class NewInventoryActivity : AppCompatActivity() {
         if (setId != "") {
             GlobalScope.launch {
                 downloadSet(setId, projectName)
+                runOnUiThread {
+                    close()
+                }
             }
-
         } else {
             Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
         }
@@ -144,5 +148,10 @@ class NewInventoryActivity : AppCompatActivity() {
                 ).show()
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 }

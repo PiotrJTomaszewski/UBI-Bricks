@@ -1,14 +1,15 @@
 package pl.pjt.ubi_bricks.database
 
 import android.content.ContentValues
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class Inventory {
     class InventoryEntity {
         var id: Int? = null
         var name: String? = null
         var active: Boolean? = null
-        var lastAccessed: LocalDate? = null
+        var lastAccessed: LocalDateTime? = null
     }
 
     companion object {
@@ -22,7 +23,7 @@ class Inventory {
 
         fun getAll(): ArrayList<InventoryEntity> {
             val db = Database.instance!!.readableDatabase
-            val query = "SELECT $COLUMN_ID, $COLUMN_NAME, $COLUMN_ACTIVE, $COLUMN_LAST_ACCESSED FROM $TABLE_INVENTORIES"
+            val query = "SELECT $COLUMN_ID, $COLUMN_NAME, $COLUMN_ACTIVE, $COLUMN_LAST_ACCESSED FROM $TABLE_INVENTORIES ORDER BY $COLUMN_LAST_ACCESSED DESC"
             val cursor = db.rawQuery(query, null)
             val list = ArrayList<InventoryEntity>()
             if (cursor.moveToFirst()) {
@@ -31,7 +32,27 @@ class Inventory {
                     entity.id = cursor.getInt(0)
                     entity.name = cursor.getString(1)
                     entity.active = (cursor.getInt(2) == IS_ACTIVE_VAL) // Conversion to Boolean
-                    entity.lastAccessed = LocalDate.ofEpochDay(cursor.getLong(3)) // TODO: It's not epoch day?
+                    entity.lastAccessed = LocalDateTime.ofEpochSecond(cursor.getLong(3), 0, ZoneOffset.UTC) // Offset doesn't really matter here
+                    list.add(entity)
+                    cursor.moveToNext()
+                }
+                cursor.close()
+            }
+            return list
+        }
+
+        fun getNonArchived(): ArrayList<InventoryEntity> {
+            val db = Database.instance!!.readableDatabase
+            val query = "SELECT $COLUMN_ID, $COLUMN_NAME, $COLUMN_ACTIVE, $COLUMN_LAST_ACCESSED FROM $TABLE_INVENTORIES WHERE $COLUMN_ACTIVE = 1 ORDER BY $COLUMN_LAST_ACCESSED DESC"
+            val cursor = db.rawQuery(query, null)
+            val list = ArrayList<InventoryEntity>()
+            if (cursor.moveToFirst()) {
+                while (!cursor.isAfterLast) {
+                    val entity = InventoryEntity()
+                    entity.id = cursor.getInt(0)
+                    entity.name = cursor.getString(1)
+                    entity.active = (cursor.getInt(2) == IS_ACTIVE_VAL) // Conversion to Boolean
+                    entity.lastAccessed = LocalDateTime.ofEpochSecond(cursor.getLong(3), 0, ZoneOffset.UTC)
                     list.add(entity)
                     cursor.moveToNext()
                 }
@@ -60,9 +81,16 @@ class Inventory {
             values.put(COLUMN_ID, id)
             values.put(COLUMN_NAME, name)
             values.put(COLUMN_ACTIVE, IS_ACTIVE_VAL)
-            values.put(COLUMN_LAST_ACCESSED, LocalDate.now().toEpochDay())
+            values.put(COLUMN_LAST_ACCESSED, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
             db.insert(TABLE_INVENTORIES, null, values)
             return id
+        }
+
+        fun setLastAccessed(id: Int) {
+            val db = Database.instance!!.writableDatabase
+            val values = ContentValues()
+            values.put(COLUMN_LAST_ACCESSED, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+            db.update(TABLE_INVENTORIES, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
         }
     }
 

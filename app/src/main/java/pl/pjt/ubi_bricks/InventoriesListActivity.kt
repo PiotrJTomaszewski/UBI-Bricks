@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +26,7 @@ class InventoriesListActivity : AppCompatActivity() {
 
     private val newProjectRequestCode = 10000
     private val inventoryPartsRequestCode = 20000
+    private val settingsRequestCode = 30000
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
@@ -38,7 +40,13 @@ class InventoriesListActivity : AppCompatActivity() {
     }
 
     private fun getProjects() {
-        val inventories = Inventory.getAll()
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val showArchived = sharedPreferences.getBoolean("showArchived", true)
+        val inventories = if (showArchived) {
+            Inventory.getAll()
+        } else {
+            Inventory.getNonArchived()
+        }
         (viewAdapter as InventoriesListAdapter).setInventories(inventories)
     }
 
@@ -51,7 +59,6 @@ class InventoriesListActivity : AppCompatActivity() {
         newProjectButton.setOnClickListener {
             showNewInventoryActivity()
         }
-        Settings(applicationContext).readSettings()
 
         viewManager = LinearLayoutManager(this)
 
@@ -68,6 +75,14 @@ class InventoriesListActivity : AppCompatActivity() {
             DividerItemDecoration(applicationContext, DividerItemDecoration.VERTICAL)
         recyclerView.addItemDecoration(dividerItemDecoration)
 
+        // Set preferences to default if they are missing
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        if (sharedPreferences.getString("urlPrefix", null) == null) {
+            val editor = sharedPreferences.edit()
+            editor.putBoolean("showArchived", true)
+            editor.putString("urlPrefix", "http://http://fcds.cs.put.poznan.pl/MyWeb/BL")
+            editor.apply()
+        }
         // TODO: Disable and then enable user control
         GlobalScope.launch {
             // Check if database exists
@@ -106,11 +121,16 @@ class InventoriesListActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> showSettingsActivity()
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+    private fun showSettingsActivity() : Boolean {
+        val i = Intent(this, SettingsActivity::class.java)
+        startActivityForResult(i, settingsRequestCode)
+        return true
+    }
 
     private fun showNewInventoryActivity() {
         val i = Intent(this, NewInventoryActivity::class.java)
@@ -118,6 +138,7 @@ class InventoriesListActivity : AppCompatActivity() {
     }
 
     private fun showInventoryPartsActivity(inventoryId: Int) {
+        Inventory.setLastAccessed(inventoryId)
         val i = Intent(applicationContext, InventoryPartsActivity::class.java)
         i.putExtra("inventoryId", inventoryId)
         startActivityForResult(i, inventoryPartsRequestCode)

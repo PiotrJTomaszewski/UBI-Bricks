@@ -29,7 +29,7 @@ class LegoCode {
         private const val TABLE_CODES = "Codes"
 
 
-        fun getByItemAndColorId(itemId: Int, colorId: Int): LegoCodeEntity {
+        fun getByItemAndColorId(itemId: Int, colorId: Int?): LegoCodeEntity {
             val db = Database.instance!!.readableDatabase
             val query =
                 "SELECT $COLUMN_ID, $COLUMN_LEGO_CODE, $COLUMN_IMAGE FROM $TABLE_CODES WHERE $COLUMN_ITEM_ID = ? AND $COLUMN_COLOR_ID = ?"
