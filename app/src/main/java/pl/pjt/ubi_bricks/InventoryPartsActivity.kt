@@ -2,6 +2,7 @@ package pl.pjt.ubi_bricks
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,8 +23,10 @@ import kotlinx.coroutines.launch
 import pl.pjt.ubi_bricks.database.*
 import pl.pjt.ubi_bricks.listAdapters.InventoryAdapter
 import java.lang.Exception
+import java.util.jar.Manifest
 
 private const val XML_PATH_CHOOSE_INTENT = 14150
+private const val STORAGE_REQUEST_CODE = 11246
 
 class InventoryPartsActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -100,9 +105,41 @@ class InventoryPartsActivity : AppCompatActivity() {
         recyclerView.addItemDecoration(dividerItemDecoration)
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            STORAGE_REQUEST_CODE -> {
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Write permission denied!", Toast.LENGTH_LONG).show()
+                } else {
+                    val intent =
+                        Intent().setAction(Intent.ACTION_CREATE_DOCUMENT).setType("text/xml")
+                    startActivityForResult(
+                        Intent.createChooser(intent, "Select a path to save"),
+                        XML_PATH_CHOOSE_INTENT
+                    )
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+    }
+
     private fun saveToXml(): Boolean {
-        val intent = Intent().setAction(Intent.ACTION_CREATE_DOCUMENT).setType("text/xml")
-        startActivityForResult(Intent.createChooser(intent, "Select a path to save"), XML_PATH_CHOOSE_INTENT)
+        val permissionType = android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        val permission = ContextCompat.checkSelfPermission(this, permissionType)
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            val intent = Intent().setAction(Intent.ACTION_CREATE_DOCUMENT).setType("text/xml")
+            startActivityForResult(
+                Intent.createChooser(intent, "Select a path to save"),
+                XML_PATH_CHOOSE_INTENT
+            )
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(permissionType), STORAGE_REQUEST_CODE)
+        }
         return true
     }
 
@@ -156,21 +193,29 @@ class InventoryPartsActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 val selectedFile: Uri? = data!!.data
                 if (selectedFile != null) {
-                        // Clone the parts list to make sure nothing will change while creating xml
-                        val partsCopy = parts.toArray()
-                        GlobalScope.launch {
-                            try {
-                                BrickListExporter.writeXml(partsCopy, selectedFile, applicationContext)
-                                runOnUiThread {
-                                    Toast.makeText(applicationContext, "Inventory exported", Toast.LENGTH_LONG).show()
-                                }
-                            } catch (e: Exception) {
-                                Log.println(Log.ERROR, "Exception", e.toString())
-                                runOnUiThread {
-                                    Toast.makeText(applicationContext, "Something went wrong", Toast.LENGTH_LONG).show()
-                                }
+                    // Clone the parts list to make sure nothing will change while creating xml
+                    val partsCopy = parts.toArray()
+                    GlobalScope.launch {
+                        try {
+                            BrickListExporter.writeXml(partsCopy, selectedFile, applicationContext)
+                            runOnUiThread {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "Inventory exported",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            Log.println(Log.ERROR, "Exception", e.toString())
+                            runOnUiThread {
+                                Toast.makeText(
+                                    applicationContext,
+                                    "Something went wrong",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
+                    }
                 }
             } else {
                 Toast.makeText(applicationContext, "Export cancelled", Toast.LENGTH_LONG).show()
