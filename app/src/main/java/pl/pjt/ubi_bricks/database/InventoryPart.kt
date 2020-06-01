@@ -82,7 +82,6 @@ class InventoryPart {
             values.put(COLUMN_QUANTITY_IN_STORE, entity.quantityInStore)
             values.put(COLUMN_COLOR_ID, entity.colorId)
 //            values.put(COLUMN_EXTRA, entity.extra)
-            // TODO: Remove
             values.put(COLUMN_EXTRA, 0)
             val result = db.insert(TABLE_INVENTORIES_PARTS, null, values)
             Log.println(Log.DEBUG, "Database", result.toString())

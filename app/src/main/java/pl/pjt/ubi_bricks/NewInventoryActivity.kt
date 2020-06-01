@@ -1,6 +1,7 @@
 package pl.pjt.ubi_bricks
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
@@ -135,11 +136,13 @@ class NewInventoryActivity : AppCompatActivity() {
             val inventoryId = Inventory.add(projectName)
             var nextPartId = InventoryPart.getFreeKey()
             val partColorIdArray = ArrayList<Pair<Part.PartEntity?, Color.ColorEntity?>>()
+            val partsNotInDb = ArrayList<BrickSet.DownloadedPart>()
             for (downloadedPart: BrickSet.DownloadedPart in downloadedParts) {
                 val dbPart = InventoryPart.InventoryPartEntity()
                 val element = Part.getByCode(downloadedPart.itemId)
                 if (element.id == null) {
                     // Part not found in the database
+                    partsNotInDb.add(downloadedPart)
                     continue
                 }
                 dbPart.id = nextPartId
@@ -151,13 +154,21 @@ class NewInventoryActivity : AppCompatActivity() {
                 dbPart.partId = element.id
                 val type = ItemType.getByCode(downloadedPart.itemType)
                 dbPart.typeId = type.id
-                // TODO: Add extra field here
+                // Extra field is not used for anything
 
                 partColorIdArray.add(Pair(element, color))
                 InventoryPart.add(dbPart)
                 nextPartId++
             }
             runOnUiThread {
+                if (partsNotInDb.size != 0) {
+                    var partsString = ""
+                    for (part: BrickSet.DownloadedPart in partsNotInDb) {
+                        partsString += "Part ${part.itemId}, Color ${part.colorCode}\n"
+                    }
+                    AlertDialog.Builder(this)
+                        .setTitle("Parts not found in the database").setMessage(partsString).show()
+                }
                 Toast.makeText(
                     applicationContext,
                     resources.getString(R.string.set_download_ok),
@@ -177,7 +188,6 @@ class NewInventoryActivity : AppCompatActivity() {
                     resources.getString(R.string.set_download_image_ok),
                     Toast.LENGTH_SHORT
                 ).show()
-                close()
             }
         } else {
             runOnUiThread {
