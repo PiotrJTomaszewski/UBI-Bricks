@@ -4,11 +4,13 @@
     <EditTextPreference
         app:key="urlPrefix"
         app:dialogTitle="@string/settings_url_prefix"
-        android:summary="placeholder"
-        android:title="@string/settings_url_prefix" />
+        android:summary=""
+        android:title="@string/settings_url_prefix"
+        android:defaultValue="http://fcds.cs.put.poznan.pl/MyWeb/BL"/>
     <SwitchPreferenceCompat
         android:key="showArchived"
         android:title="@string/settings_archive"
         android:summary="@string/settings_show_archived"
+        android:defaultValue="false"
         />
 </PreferenceScreen>

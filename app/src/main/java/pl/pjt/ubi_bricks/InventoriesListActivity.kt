@@ -79,10 +79,7 @@ class InventoriesListActivity : AppCompatActivity() {
         // Set preferences to default if they are missing
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         if (sharedPreferences.getString("urlPrefix", null) == null) {
-            val editor = sharedPreferences.edit()
-            editor.putBoolean("showArchived", true)
-            editor.putString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL")
-            editor.apply()
+            PreferenceManager.setDefaultValues(this, R.xml.preferences, true)
         }
         disableControl()
         GlobalScope.launch {

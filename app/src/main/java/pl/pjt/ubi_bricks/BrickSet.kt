@@ -37,7 +37,7 @@ class BrickSet (
     suspend fun downloadInventory(): Boolean {
         var result = false
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val urlPrefix = sharedPreferences.getString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL/")
+        val urlPrefix = sharedPreferences.getString("urlPrefix", "")
         val url = "$urlPrefix/$setId.xml"
         withContext(Dispatchers.IO) {
             val connection = URL(url).openConnection() as HttpURLConnection
@@ -64,7 +64,7 @@ class BrickSet (
         var result = false
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val urlPrefix = sharedPreferences.getString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL/")
+        val urlPrefix = sharedPreferences.getString("urlPrefix", "")
         val url = "$urlPrefix/$setId.xml"
         withContext(Dispatchers.IO) {
             val connection: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
@@ -90,7 +90,7 @@ class BrickSet (
                 val itemId = getNodeValue("ITEMID", elem)
                 val quantity = getNodeValue("QTY", elem)
                 val color = getNodeValue("COLOR", elem)
-                // TODO: Extra seems to have value 'N' and not int
+                // Extra seems to have value 'N' and not int
 //                val extra = getNodeValue("EXTRA", elem)
 
                 val downloadedPart = DownloadedPart(itemType, itemId, quantity.toInt(), color.toInt())
