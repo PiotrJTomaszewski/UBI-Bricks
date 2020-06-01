@@ -21,6 +21,7 @@ class Inventory {
         private const val TABLE_INVENTORIES = "Inventories"
 
         private const val IS_ACTIVE_VAL = 1
+        private const val IS_INACTIVE_VAL = 0
 
         fun getAll(): ArrayList<InventoryEntity> {
             val db = Database.instance!!.readableDatabase
@@ -93,6 +94,32 @@ class Inventory {
             val db = Database.instance!!.writableDatabase
             val values = ContentValues()
             values.put(COLUMN_LAST_ACCESSED, Instant.now().toEpochMilli())
+            db.update(TABLE_INVENTORIES, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
+        }
+
+        fun checkIfActive(id: Int): Boolean {
+            val db = Database.instance!!.readableDatabase
+            val query = "SELECT $COLUMN_ACTIVE FROM $TABLE_INVENTORIES WHERE $COLUMN_ID = ?"
+            val cursor = db.rawQuery(query, arrayOf(id.toString()))
+            var isActive = false
+            if (cursor.moveToFirst()) {
+                isActive = (cursor.getInt(0) == IS_ACTIVE_VAL)
+                cursor.close()
+            }
+            return isActive
+        }
+
+        fun deactivate(id: Int) {
+            val db = Database.instance!!.writableDatabase
+            val values = ContentValues()
+            values.put(COLUMN_ACTIVE, IS_INACTIVE_VAL)
+            db.update(TABLE_INVENTORIES, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
+        }
+
+        fun activate(id: Int) {
+            val db = Database.instance!!.writableDatabase
+            val values = ContentValues()
+            values.put(COLUMN_ACTIVE, IS_ACTIVE_VAL)
             db.update(TABLE_INVENTORIES, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
         }
     }

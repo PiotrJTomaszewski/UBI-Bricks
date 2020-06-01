@@ -5,8 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +29,8 @@ class InventoryPartsActivity : AppCompatActivity() {
     private lateinit var viewManager: RecyclerView.LayoutManager
 
     private lateinit var parts: ArrayList<InventoryPart.InventoryPartEntity>
+    private var projectId: Int? = null
+    private lateinit var menu: Menu
 
     inner class PlusMinusButtonOnClickListener : InventoryAdapter.ButtonClickListener {
         override fun onPlusButtonClick(position: Int) {
@@ -59,11 +64,10 @@ class InventoryPartsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_inventory)
         setSupportActionBar(inventoryToolbar)
 
-
         val extras = intent.extras ?: return
-        val inventoryId = extras.getInt("inventoryId")
+        projectId = extras.getInt("inventoryId")
 
-        parts = InventoryPart.getByInventoryId(inventoryId)
+        parts = InventoryPart.getByInventoryId(projectId!!)
         for (i in 0 until parts.size) {
             if (parts[i].typeId != null) {
                 parts[i].typeEntity = ItemType.getById(parts[i].typeId!!)
@@ -96,9 +100,54 @@ class InventoryPartsActivity : AppCompatActivity() {
         recyclerView.addItemDecoration(dividerItemDecoration)
     }
 
-    fun saveToXml(view: View) {
+    private fun saveToXml(): Boolean {
         val intent = Intent().setAction(Intent.ACTION_CREATE_DOCUMENT).setType("text/xml")
         startActivityForResult(Intent.createChooser(intent, "Select a path to save"), XML_PATH_CHOOSE_INTENT)
+        return true
+    }
+
+    private fun deactivateProject(): Boolean {
+        Inventory.deactivate(projectId!!)
+        updateMenu(this.menu, false)
+        return true
+    }
+
+    private fun activateProject(): Boolean {
+        Inventory.activate(projectId!!)
+        updateMenu(this.menu, true)
+        return true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_project, menu)
+        this.menu = menu
+        updateMenu(menu, Inventory.checkIfActive(projectId!!))
+        return true
+    }
+
+    private fun updateMenu(menu: Menu, isActive: Boolean) {
+        val archiveButton = menu.findItem(R.id.action_project_archive)
+        val unarchiveButton = menu.findItem(R.id.action_project_unarchive)
+        if (isActive) {
+            archiveButton.isVisible = true
+            unarchiveButton.isVisible = false
+        } else {
+            archiveButton.isVisible = false
+            unarchiveButton.isVisible = true
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_project_export -> saveToXml()
+            R.id.action_project_archive -> deactivateProject()
+            R.id.action_project_unarchive -> activateProject()
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

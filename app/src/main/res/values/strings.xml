@@ -18,5 +18,8 @@
     <string name="settings_url_prefix">Prefix of URL</string>
     <string name="settings_archive">Archive</string>
     <string name="settings_show_archived">Show archived</string>
+    <string name="project_export">Export to XML</string>
+    <string name="project_archive">Archive project</string>
+    <string name="project_unarchive">Unarchive project</string>
 
 </resources>

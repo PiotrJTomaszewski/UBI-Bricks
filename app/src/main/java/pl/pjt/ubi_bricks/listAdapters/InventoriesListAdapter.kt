@@ -1,5 +1,7 @@
 package pl.pjt.ubi_bricks.listAdapters
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -10,7 +12,8 @@ import pl.pjt.ubi_bricks.database.Inventory
 
 class InventoriesListAdapter (
     private var inventories: ArrayList<Inventory.InventoryEntity>?,
-    private val onItemClickListener: ClickListener
+    private val onItemClickListener: ClickListener,
+    private val context: Context
 ): RecyclerView.Adapter<InventoriesListAdapter.ViewHolder>() {
     class InventoryDiffCallback(
         private val oldList: ArrayList<Inventory.InventoryEntity>?,
@@ -61,6 +64,11 @@ class InventoriesListAdapter (
             holder.nameView.text = inventories!![position].name
             holder.nameView.setOnClickListener {
                 inventories!![position].id?.let { it1 -> onItemClickListener.onItemClick(it1) }
+            }
+            if (inventories!![position].active!!) {
+                holder.nameView.setBackgroundColor(context.resources.getColor(R.color.defaultBackground, context.theme))
+            } else {
+                holder.nameView.setBackgroundColor(context.resources.getColor(R.color.inactiveBackground, context.theme))
             }
         }
     }

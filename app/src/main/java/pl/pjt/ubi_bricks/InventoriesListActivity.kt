@@ -64,7 +64,8 @@ class InventoriesListActivity : AppCompatActivity() {
 
         viewAdapter = InventoriesListAdapter(
             null,
-            ProjectListOnClickListener()
+            ProjectListOnClickListener(),
+            applicationContext
         )
         recyclerView = findViewById<RecyclerView>(R.id.inventoriesList).apply {
             setHasFixedSize(true)

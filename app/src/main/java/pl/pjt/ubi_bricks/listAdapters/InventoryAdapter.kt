@@ -91,9 +91,9 @@ class InventoryAdapter(
             buttonClickCallback.onPlusButtonClick(position)
         }
         if (part.quantityInStore == part.quantityInSet) {
-            holder.view.setBackgroundColor(context.resources.getColor(R.color.partFoundBackground))
+            holder.view.setBackgroundColor(context.resources.getColor(R.color.partFoundBackground, context.theme))
         } else {
-            holder.view.setBackgroundColor(context.resources.getColor(R.color.defaultBackground))
+            holder.view.setBackgroundColor(context.resources.getColor(R.color.defaultBackground, context.theme))
         }
     }
 
