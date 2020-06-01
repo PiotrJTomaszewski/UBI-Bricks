@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.activity_inventories_list.*
 import kotlinx.android.synthetic.main.activity_new_inventory.*
+import kotlinx.android.synthetic.main.element_inventories_list.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -30,6 +31,7 @@ class NewInventoryActivity : AppCompatActivity() {
     }
 
     fun checkInventoryCallback(view: View?) {
+        disableControl()
         val setId = newInventorySetId.text.toString()
         if (setId == "") {
             Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
@@ -55,6 +57,7 @@ class NewInventoryActivity : AppCompatActivity() {
                 }
             }
         }
+        enableControl()
     }
 
     override fun finish() {
@@ -68,22 +71,27 @@ class NewInventoryActivity : AppCompatActivity() {
     }
 
     fun addInventoryCallback(view: View?) {
+        disableControl()
         val setId = newInventorySetId.text.toString()
         val projectName = newInventoryName.text.toString()
-        if (projectName == "") {
-            Toast.makeText(applicationContext, "Please input a project name!", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-        if (setId != "") {
-            GlobalScope.launch {
-                downloadSet(setId, projectName)
-                runOnUiThread {
-                    close()
+        when {
+            projectName == "" -> {
+                Toast.makeText(applicationContext, "Please input a project name!", Toast.LENGTH_SHORT)
+                    .show()
+                enableControl()
+            }
+            setId != "" -> {
+                GlobalScope.launch {
+                    downloadSet(setId, projectName)
+                    runOnUiThread {
+                        enableControl()
+                    }
                 }
             }
-        } else {
-            Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
+            else -> {
+                enableControl()
+                Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -153,5 +161,19 @@ class NewInventoryActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
+    }
+
+    private fun disableControl() {
+        checkInventoryButton.isEnabled = false
+        addInventoryButton.isEnabled = false
+        newInventorySetId.isEnabled = false
+        newInventoryName.isEnabled = false
+    }
+
+    private fun enableControl() {
+        checkInventoryButton.isEnabled = true
+        addInventoryButton.isEnabled = true
+        newInventorySetId.isEnabled = true
+        newInventoryName.isEnabled = true
     }
 }

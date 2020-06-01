@@ -84,7 +84,7 @@ class InventoriesListActivity : AppCompatActivity() {
             editor.putString("urlPrefix", "http://http://fcds.cs.put.poznan.pl/MyWeb/BL")
             editor.apply()
         }
-        // TODO: Disable and then enable user control
+        disableControl()
         GlobalScope.launch {
             // Check if database exists
             val dbDownloader = lifecycleScope.async {
@@ -108,6 +108,9 @@ class InventoriesListActivity : AppCompatActivity() {
             // Wait for the database to be downloaded
             dbDownloader.await()
             getProjects()
+            runOnUiThread {
+                enableControl()
+            }
         }
     }
 
@@ -150,5 +153,14 @@ class InventoriesListActivity : AppCompatActivity() {
 //        if ((requestCode == newProjectRequestCode) && (resultCode == Activity.RESULT_OK)) {
             getProjects()
 //        }
+    }
+
+    private fun disableControl() {
+        newProjectButton.isEnabled = false
+
+    }
+
+    private fun enableControl() {
+        newProjectButton.isEnabled = true
     }
 }
