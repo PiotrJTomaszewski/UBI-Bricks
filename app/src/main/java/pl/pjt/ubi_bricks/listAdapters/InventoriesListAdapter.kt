@@ -30,17 +30,12 @@ class InventoriesListAdapter (
             if (oldList == null) {
                 return false
             }
-            return (oldList[oldItemPosition].id == newList[newItemPosition].id
-                    && oldList[oldItemPosition].name == newList[newItemPosition].name
-                    && oldList[oldItemPosition].active == newList[newItemPosition].active
+            return (oldList[oldItemPosition].active == newList[newItemPosition].active
                     && oldList[oldItemPosition].lastAccessed == newList[newItemPosition].lastAccessed)
         }
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            if (oldList == null) {
-                return false
-            }
-            return (oldList[oldItemPosition].id == newList[newItemPosition].id)
+            return false // A workaround for broken callbacks
         }
     }
 
