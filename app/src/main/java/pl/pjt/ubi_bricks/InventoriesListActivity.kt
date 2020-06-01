@@ -81,7 +81,7 @@ class InventoriesListActivity : AppCompatActivity() {
         if (sharedPreferences.getString("urlPrefix", null) == null) {
             val editor = sharedPreferences.edit()
             editor.putBoolean("showArchived", true)
-            editor.putString("urlPrefix", "http://http://fcds.cs.put.poznan.pl/MyWeb/BL")
+            editor.putString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL")
             editor.apply()
         }
         disableControl()

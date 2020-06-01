@@ -18,6 +18,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import pl.pjt.ubi_bricks.database.*
+import java.lang.Exception
 
 class NewInventoryActivity : AppCompatActivity() {
 
@@ -35,29 +36,43 @@ class NewInventoryActivity : AppCompatActivity() {
         val setId = newInventorySetId.text.toString()
         if (setId == "") {
             Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
+            enableControl()
         } else {
             lifecycleScope.launch {
-                val exists = BrickSet(setId, applicationContext).checkSetExists()
-                if (exists) {
-                    runOnUiThread {
-                        Toast.makeText(
-                            applicationContext,
-                            "Set ID is correct",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                try {
+                    val exists = BrickSet(setId, applicationContext).checkSetExists()
+                    if (exists) {
+                        runOnUiThread {
+                            enableControl()
+                            Toast.makeText(
+                                applicationContext,
+                                "Set ID is correct",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } else {
+                        runOnUiThread {
+                            enableControl()
+                            Toast.makeText(
+                                applicationContext,
+                                "Set ID is incorrect!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                } else {
+                } catch (exception: Exception) {
                     runOnUiThread {
+                        enableControl()
                         Toast.makeText(
                             applicationContext,
-                            "Set ID is incorrect!",
-                            Toast.LENGTH_SHORT
+                            "Something went wrong, check your URL prefix",
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 }
             }
+
         }
-        enableControl()
     }
 
     override fun finish() {
@@ -76,21 +91,37 @@ class NewInventoryActivity : AppCompatActivity() {
         val projectName = newInventoryName.text.toString()
         when {
             projectName == "" -> {
-                Toast.makeText(applicationContext, "Please input a project name!", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    applicationContext,
+                    "Please input a project name!",
+                    Toast.LENGTH_SHORT
+                )
                     .show()
                 enableControl()
             }
             setId != "" -> {
                 GlobalScope.launch {
-                    downloadSet(setId, projectName)
-                    runOnUiThread {
-                        enableControl()
+                    try {
+                        downloadSet(setId, projectName)
+                        runOnUiThread {
+                            enableControl()
+                        }
+                    } catch (exception: Exception) {
+                        runOnUiThread {
+                            enableControl()
+                            Toast.makeText(
+                                applicationContext,
+                                "Something went wrong, check your URL prefix",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
             else -> {
                 enableControl()
-                Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Set ID is incorrect!", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -146,6 +177,7 @@ class NewInventoryActivity : AppCompatActivity() {
                     resources.getString(R.string.set_download_image_ok),
                     Toast.LENGTH_SHORT
                 ).show()
+                close()
             }
         } else {
             runOnUiThread {

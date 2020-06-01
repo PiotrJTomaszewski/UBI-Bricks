@@ -1,6 +1,7 @@
 package pl.pjt.ubi_bricks
 
 import android.content.Context
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.w3c.dom.Document
@@ -31,13 +32,14 @@ class BrickSet (
     ) {
     }
 
-    private val url = "http://fcds.cs.put.poznan.pl/MyWeb/BL/$setId.xml"
-
     private var xmlDocument: Document? = null
 
-    fun downloadInventory(): Boolean {
+    suspend fun downloadInventory(): Boolean {
         var result = false
-//        withContext(Dispatchers.IO) {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val urlPrefix = sharedPreferences.getString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL/")
+        val url = "$urlPrefix/$setId.xml"
+        withContext(Dispatchers.IO) {
             val connection = URL(url).openConnection() as HttpURLConnection
             connection.doInput = true
             connection.connect()
@@ -54,12 +56,16 @@ class BrickSet (
                 xmlDocument = dBuilder.parse(xmlInput)
                 result = true
             }
-//        }
+        }
         return result
     }
 
     suspend fun checkSetExists(): Boolean {
         var result = false
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val urlPrefix = sharedPreferences.getString("urlPrefix", "http://fcds.cs.put.poznan.pl/MyWeb/BL/")
+        val url = "$urlPrefix/$setId.xml"
         withContext(Dispatchers.IO) {
             val connection: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
             connection.connect()
